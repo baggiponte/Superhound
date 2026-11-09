@@ -207,7 +207,7 @@
 "Emoji" = "Emoji";
 
 /* Row detail; Return is the key name */
-"Emoji · Return to copy" = "Emoji · ↩ zum Kopieren";
+"Emoji · Return to paste" = "Emoji · ↩ zum Einsetzen";
 
 /* Alert button
    System command name in search results */
@@ -570,6 +570,12 @@
 
 /* No comment */
 "The download is not the expected version of Superhound." = "Der Download ist nicht die erwartete Version von Superhound.";
+
+/* No comment */
+"The emoji is copied. Superhound could not return to the previous app, so nothing was inserted." = "Emoji kopiert. Superhound kam nicht zur vorherigen App zurück, daher wurde nichts eingesetzt.";
+
+/* System Settings → Privacy & Security → Accessibility is the place in System Settings */
+"The emoji is copied. To insert emoji with Return, allow Superhound in System Settings → Privacy & Security → Accessibility." = "Emoji kopiert. Zum Einsetzen mit ↩ erlaube Superhound in Datenschutz & Sicherheit → Bedienungshilfen.";
 
 /* No comment */
 "The items in the Trash are deleted permanently. You cannot undo this." = "Die Objekte im Papierkorb werden endgültig gelöscht. Du kannst dies nicht widerrufen.";

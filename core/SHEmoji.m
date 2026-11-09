@@ -58,3 +58,8 @@ static NSArray<NSString *> *Words(NSString *text) {
  return results;
 }
 @end
+NSArray<NSString *> *SHTypingChunks(NSString *text,NSUInteger units){
+ NSMutableArray<NSString *> *chunks=NSMutableArray.array;NSUInteger start=0,end=0;
+ while(end<text.length){NSRange character=[text rangeOfComposedCharacterSequenceAtIndex:end];if(end>start && NSMaxRange(character)-start>units){[chunks addObject:[text substringWithRange:NSMakeRange(start,end-start)]];start=end;}end=NSMaxRange(character);}
+ if(end>start)[chunks addObject:[text substringWithRange:NSMakeRange(start,end-start)]];return chunks;
+}

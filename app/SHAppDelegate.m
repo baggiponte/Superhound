@@ -44,7 +44,7 @@ static NSString *const LicensePublicKey=@"BB1mBfflJqWXPJerDDR+MLSwGOCcP/HFGM8f+H
  [self applyClipboardHistory];
  // Turning the history off in Settings offers to delete what it kept.
  _settings.clipboardChanged=^{SHAppDelegate *self=weak;if(!self)return;[self applyClipboardHistory];if(!SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults) && self->_clipboard.count)[self clearHistory:nil];};
- _panel.openResult=^(NSDictionary *result,NSString *action,NSURL *application){[SHResultActions perform:action result:result application:application completion:^(NSString *error){SHAppDelegate *self=weak;if(error){[self->_panel showError:error];if(![@[@"command",@"clipboard",@"emoji",@"url",@"web"] containsObject:result[@"type"]])[self->_library refresh];}else if(![@[@"paste",@"trash"] containsObject:action])[self->_welcome resultOpened];}];};
+ _panel.openResult=^(NSDictionary *result,NSString *action,NSURL *application){[SHResultActions perform:action result:result application:application completion:^(NSString *error){SHAppDelegate *self=weak;if(error){[self->_panel showError:error];if(![@[@"command",@"clipboard",@"emoji",@"url",@"web"] containsObject:result[@"type"]])[self->_library refresh];}else if(![@[@"paste",@"trash",@"type"] containsObject:action])[self->_welcome resultOpened];}];};
  _library.updated=^(SHSearchSnapshot *snapshot,NSArray<NSDictionary *> *roots,NSString *message){
   SHAppDelegate *self=weak;if(!self)return;
   // The item count is shown in Settings; the panel shows only indexing and coverage notes.

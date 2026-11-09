@@ -207,7 +207,7 @@
 "Emoji" = "表情符号";
 
 /* Row detail; Return is the key name */
-"Emoji · Return to copy" = "表情符号 · 按Return键拷贝";
+"Emoji · Return to paste" = "表情符号 · 按Return键粘贴";
 
 /* Alert button
    System command name in search results */
@@ -570,6 +570,12 @@
 
 /* No comment */
 "The download is not the expected version of Superhound." = "下载的文件不是预期的Superhound版本。";
+
+/* No comment */
+"The emoji is copied. Superhound could not return to the previous app, so nothing was inserted." = "表情符号已拷贝。Superhound无法返回之前的App，因此未插入任何内容。";
+
+/* System Settings → Privacy & Security → Accessibility is the place in System Settings */
+"The emoji is copied. To insert emoji with Return, allow Superhound in System Settings → Privacy & Security → Accessibility." = "表情符号已拷贝。要按Return键插入表情符号，请在“系统设置”→“隐私与安全性”→“辅助功能”中允许Superhound。";
 
 /* No comment */
 "The items in the Trash are deleted permanently. You cannot undo this." = "废纸篓中的项目将被永久删除。此操作无法撤销。";

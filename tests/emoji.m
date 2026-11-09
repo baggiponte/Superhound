@@ -16,5 +16,10 @@ int main(int argc,char **argv){@autoreleasepool{
  // The list holds every emoji once, in file order, with the keys of a search result.
  NSArray *list=e.list;assert(list.count>1000 && [NSSet setWithArray:[list valueForKey:@"path"]].count==list.count && [list containsObject:fire] && [[list.firstObject objectForKey:@"emoji"] isEqual:@"😀"]);
  for(NSString *q in @[@"",@"f",@"zzqq",@"fire zzqq",@"main.c"])assert([e search:q limit:8].count==0);
- puts("PASS emoji: names, keywords, flags, limits, rejected input, full list");
+ // Key presses carry at most 20 UTF-16 units; pieces end where a character ends.
+ assert([SHTypingChunks(@"🔥",20) isEqual:@[@"🔥"]] && SHTypingChunks(@"",20).count==0);
+ NSString *family=@"👨‍👩‍👧‍👦";assert(family.length==11 && [SHTypingChunks(family,20) isEqual:@[family]] && [SHTypingChunks(family,4) isEqual:@[family]]);
+ assert([SHTypingChunks([family stringByAppendingString:family],20) isEqual:(@[family,family])]);
+ assert([SHTypingChunks(@"ab🔥c",3) isEqual:(@[@"ab",@"🔥c"])]);assert([[SHTypingChunks(@"🇮🇹🇯🇵🔥",4) componentsJoinedByString:@"|"] isEqual:@"🇮🇹|🇯🇵|🔥"]);
+ puts("PASS emoji: names, keywords, flags, limits, rejected input, full list, typing pieces");
 }return 0;}

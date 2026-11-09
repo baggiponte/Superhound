@@ -207,7 +207,7 @@
 "Emoji" = "絵文字";
 
 /* Row detail; Return is the key name */
-"Emoji · Return to copy" = "絵文字 · Returnでコピー";
+"Emoji · Return to paste" = "絵文字 · Returnでペースト";
 
 /* Alert button
    System command name in search results */
@@ -570,6 +570,12 @@
 
 /* No comment */
 "The download is not the expected version of Superhound." = "ダウンロードしたファイルは想定されたバージョンのSuperhoundではありません。";
+
+/* No comment */
+"The emoji is copied. Superhound could not return to the previous app, so nothing was inserted." = "絵文字をコピーしました。Superhoundが前のアプリに戻れなかったため、入力されませんでした。";
+
+/* System Settings → Privacy & Security → Accessibility is the place in System Settings */
+"The emoji is copied. To insert emoji with Return, allow Superhound in System Settings → Privacy & Security → Accessibility." = "絵文字をコピーしました。Returnで絵文字を入力するには、「システム設定」→「プライバシーとセキュリティ」→「アクセシビリティ」でSuperhoundを許可してください。";
 
 /* No comment */
 "The items in the Trash are deleted permanently. You cannot undo this." = "ゴミ箱の項目は完全に削除されます。この操作は取り消せません。";
