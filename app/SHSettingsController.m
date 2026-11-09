@@ -13,12 +13,12 @@
  __weak typeof(self) weak=self;_monitor=[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown|NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown handler:^NSEvent *(NSEvent *event){SHShortcutButton *self=weak;if(!self)return event;if(event.type!=NSEventTypeKeyDown){[self stop:nil];return event;}[self stop:event.keyCode==53?nil:event];return nil;}];
  [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(resigned:) name:NSWindowDidResignKeyNotification object:self.window];
 }
-- (void)showKeys {if(!_monitor)self.title=_hotKey.label;}
+- (void)showKeys {if(!_monitor)self.title=_hotKey.cleared?NSLocalizedString(@"None",@"Shortcut button title when the user removed the shortcut; 170 points wide"):_hotKey.label;}
 - (void)resigned:(NSNotification *)notification {(void)notification;[self stop:nil];}
 // The shortcuts register again before the new keys, so a refused recording keeps its reason in the status.
 - (void)stop:(NSEvent *)keys {
  if(!_monitor)return;[NSEvent removeMonitor:_monitor];_monitor=nil;[NSNotificationCenter.defaultCenter removeObserver:self name:NSWindowDidResignKeyNotification object:self.window];
- [_hotKey registerSaved];[_hotKey.other registerSaved];if(keys)[_hotKey recordEvent:keys];[self showKeys];if(self.changed)self.changed();
+ [_hotKey registerSaved];[_hotKey.other registerSaved];if(keys && self.allowsClear && (keys.keyCode==51 || keys.keyCode==117) && !(keys.modifierFlags&(NSEventModifierFlagCommand|NSEventModifierFlagOption|NSEventModifierFlagControl)))[_hotKey clear];else if(keys)[_hotKey recordEvent:keys];[self showKeys];if(self.changed)self.changed();
 }
 - (void)viewWillMoveToWindow:(NSWindow *)window {if(!window)[self stop:nil];[super viewWillMoveToWindow:window];}
 @end
@@ -61,7 +61,7 @@ NSButton *SHButton(NSView *view,NSString *title,NSRect frame,id target,SEL actio
  // The clipboard history row sits under the search shortcut text, with its status under it.
  for(NSView *v in view.subviews)[v setFrameOrigin:NSMakePoint(v.frame.origin.x,v.frame.origin.y+96)];
  SHLabel(view,NSLocalizedString(@"Clipboard",@"Section label: the clipboard history; Settings row label (160 points wide) and search panel band; keep it short"),NSMakeRect(24,68,160,24),15,NO);
- _historyRecorder=[[SHShortcutButton alloc] initWithFrame:NSMakeRect(189,62,170,32) hotKey:historyKey];_historyRecorder.accessibilityLabel=NSLocalizedString(@"Record clipboard history shortcut",@"VoiceOver label of the shortcut button");[view addSubview:_historyRecorder];
+ _historyRecorder=[[SHShortcutButton alloc] initWithFrame:NSMakeRect(189,62,170,32) hotKey:historyKey];_historyRecorder.accessibilityLabel=NSLocalizedString(@"Record clipboard history shortcut",@"VoiceOver label of the shortcut button");_historyRecorder.allowsClear=YES;[view addSubview:_historyRecorder];
  _historyRecorder.changed=^{[weak shortcutStatus];};
  _historyDefault=SHButton(view,[NSString stringWithFormat:NSLocalizedString(@"Use %@",@"Settings button that restores the default shortcut; the argument is a shortcut such as ⌥⌘V; 120 points wide"),historyKey.defaultLabel],NSMakeRect(365,62,120,32),self,@selector(defaultHistoryShortcut:));
  // Off, the pasteboard is not read and the history shortcut is free for another clipboard app.
@@ -87,7 +87,7 @@ NSButton *SHButton(NSView *view,NSString *title,NSRect frame,id target,SEL actio
  [self shortcutStatus];[self updateButtons];[window center];return self;
 }
 - (void)show {[_table reloadData];[_table deselectAll:nil];[NSApp activateIgnoringOtherApps:YES];[self.window makeKeyAndOrderFront:nil];[self shortcutStatus];}
-- (void)shortcutStatus {[_recorder showKeys];[_historyRecorder showKeys];_spotlight.state=SHSpotlightEnabled(SHHotKey.spotlightHotKeys)?NSControlStateValueOff:NSControlStateValueOn;_shortcutStatus.stringValue=_hotKey.status?:NSLocalizedString(@"Use Search in the menu bar while setting up your shortcut.",@"Search is the menu item title");BOOL clip=SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults);_keepHistory.state=clip?NSControlStateValueOn:NSControlStateValueOff;_historyRecorder.enabled=_historyDefault.enabled=clip;
+- (void)shortcutStatus {[_recorder showKeys];[_historyRecorder showKeys];_spotlight.state=SHSpotlightEnabled(SHHotKey.spotlightHotKeys)?NSControlStateValueOff:NSControlStateValueOn;_shortcutStatus.stringValue=_hotKey.status?:NSLocalizedString(@"Use Search in the menu bar while setting up your shortcut.",@"Search is the menu item title");BOOL clip=SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults);_keepHistory.state=clip?NSControlStateValueOn:NSControlStateValueOff;_historyRecorder.enabled=_historyDefault.enabled=clip;_historyDefault.title=_historyKey.cleared?[NSString stringWithFormat:NSLocalizedString(@"Use %@",@"Settings button that restores the default shortcut; the argument is a shortcut such as ⌥⌘V; 120 points wide"),_historyKey.defaultLabel]:NSLocalizedString(@"Remove",@"Settings button: remove the clipboard history shortcut so its keys are free for other apps; 120 points wide");
  _historyStatus.stringValue=clip?(_historyKey.status?:@""):[NSString stringWithFormat:NSLocalizedString(@"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps.",@"Settings status; the argument is a shortcut such as ⌥⌘V"),_historyKey.label];}
 - (void)updateRoots:(NSArray<NSDictionary *> *)roots message:(NSString *)message {
  NSInteger selected=_table.selectedRow;NSString *identifier=selected>=0 && selected<(NSInteger)_roots.count?_roots[(NSUInteger)selected][@"id"]:nil;
@@ -116,7 +116,8 @@ void SHChooseFolders(NSWindow *window,SHLibrary *library,NSString *replacing) {
 - (void)exclude:(NSButton *)sender {[_library setExcludeGenerated:sender.state==NSControlStateValueOn];}
 - (void)retry:(id)sender {(void)sender;[_hotKey registerSaved];[_historyKey registerSaved];[self shortcutStatus];}
 - (void)keepHistory:(NSButton *)sender {[NSUserDefaults.standardUserDefaults setBool:sender.state==NSControlStateValueOn forKey:SHClipboardHistoryKey];if(self.clipboardChanged)self.clipboardChanged();[self shortcutStatus];}
-- (void)defaultHistoryShortcut:(id)sender {(void)sender;[_historyKey useDefault];[self shortcutStatus];}
+// Removes the history shortcut, or restores the default keys after a removal.
+- (void)defaultHistoryShortcut:(id)sender {(void)sender;if(_historyKey.cleared)[_historyKey useDefault];else [_historyKey clear];[self shortcutStatus];}
 - (void)spotlight:(NSButton *)sender {
  BOOL saved=[_hotKey replaceSpotlight:sender.state==NSControlStateValueOn];[self shortcutStatus];
  if(!saved)_shortcutStatus.stringValue=NSLocalizedString(@"macOS did not save the Spotlight shortcut. Change it in Keyboard Settings….",@"Keyboard Settings… is the button title");

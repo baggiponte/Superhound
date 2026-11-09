@@ -267,6 +267,12 @@
 /* Placeholder of the license key field */
 "License key" = "Clé de licence";
 
+/* Settings status after the user removed a shortcut; the argument is a menu item name such as Clipboard History */
+"No shortcut. Use %@ in the menu bar." = "Aucun raccourci. Utilisez %@ dans la barre des menus.";
+
+/* Shortcut button title when the user removed the shortcut; 170 points wide */
+"None" = "Aucun";
+
 /* Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space */
 "Press %@ to search." = "Appuyez sur %@ pour rechercher.";
 

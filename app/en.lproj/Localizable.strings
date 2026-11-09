@@ -289,8 +289,14 @@
 /* Label above the result list while a search location is still indexing; keep it short */
 "No matches yet. Still indexing." = "No matches yet. Still indexing.";
 
+/* Settings status after the user removed a shortcut; the argument is a menu item name such as Clipboard History */
+"No shortcut. Use %@ in the menu bar." = "No shortcut. Use %@ in the menu bar.";
+
 /* No comment */
 "No sound output is available." = "No sound output is available.";
+
+/* Shortcut button title when the user removed the shortcut; 170 points wide */
+"None" = "None";
 
 /* Alert button */
 "Not Now" = "Not Now";
@@ -391,7 +397,8 @@
 /* Alert button that opens the release notes web page */
 "Release Notes" = "Release Notes";
 
-/* Settings button: remove the selected search location; 90 points wide */
+/* Settings button: remove the clipboard history shortcut so its keys are free for other apps; 120 points wide
+   Settings button: remove the selected search location; 90 points wide */
 "Remove" = "Remove";
 
 /* Alert button */

@@ -17,7 +17,7 @@ static OSStatus Invoked(EventHandlerCallRef next,EventRef event,void *context){
 - (NSString *)label {return [NSUserDefaults.standardUserDefaults stringForKey:[self key:@"Label"]]?:_defaultLabel;}
 - (BOOL)registerSaved {
  NSAssert(NSThread.isMainThread,@"hotkeys require main thread");if(_key){UnregisterEventHotKey(_key);_key=NULL;}
- if(_off){_status=nil;_error=noErr;return YES;}
+ if(_off || self.cleared){_status=_off?nil:[NSString stringWithFormat:NSLocalizedString(@"No shortcut. Use %@ in the menu bar.",@"Settings status after the user removed a shortcut; the argument is a menu item name such as Clipboard History"),_menu];_error=noErr;return YES;}
  UInt32 code=(UInt32)[NSUserDefaults.standardUserDefaults integerForKey:[self key:@"Code"]],mods=(UInt32)[NSUserDefaults.standardUserDefaults integerForKey:[self key:@"Modifiers"]];
  OSStatus result=_error=RegisterEventHotKey(code,mods,(EventHotKeyID){'SHND',_identifier},GetApplicationEventTarget(),kEventHotKeyExclusive,&_key);if(result!=noErr)_key=NULL;
  _status=result==noErr?[NSString stringWithFormat:NSLocalizedString(@"%@ registered. Try it from another app and confirm only Superhound opens.",@"Settings status; the argument is a shortcut such as ⌘Space"),self.label]:result==eventHotKeyExistsErr?[NSString stringWithFormat:NSLocalizedString(@"%@ is in use by another app. Use %@ in the menu bar, or choose other keys.",@"Settings status; the first argument is a shortcut such as ⌘Space, the second a menu item name such as Search"),self.label,_menu]:[NSString stringWithFormat:NSLocalizedString(@"%@ is unavailable (error %d). Use %@ in the menu bar, change the competing shortcut, then Retry.",@"Settings status; the first argument is a shortcut, the second an error number, the third a menu item name such as Search; Retry is a button title"),self.label,(int)result,_menu];
@@ -32,6 +32,8 @@ static OSStatus Invoked(EventHandlerCallRef next,EventRef event,void *context){
  NSString *label=[NSString stringWithFormat:@"%@%@%@%@%@",mods&controlKey?@"⌃":@"",mods&optionKey?@"⌥":@"",mods&shiftKey?@"⇧":@"",mods&cmdKey?@"⌘":@"",key];
  return [self saveCode:event.keyCode modifiers:mods label:label];
 }
+- (BOOL)cleared {return [NSUserDefaults.standardUserDefaults boolForKey:[self key:@"Cleared"]];}
+- (void)clear {[NSUserDefaults.standardUserDefaults setBool:YES forKey:[self key:@"Cleared"]];[self registerSaved];}
 - (void)useDefault {[self saveCode:_code modifiers:_modifiers label:_defaultLabel];}
 - (void)pause {if(_key){UnregisterEventHotKey(_key);_key=NULL;}}
 - (BOOL)registered {return _key!=NULL;}
@@ -49,11 +51,11 @@ static OSStatus Invoked(EventHandlerCallRef next,EventRef event,void *context){
 // New keys replace the saved ones only when they register, so a refused or taken shortcut leaves the previous one working.
 - (BOOL)saveCode:(UInt32)code modifiers:(UInt32)mods label:(NSString *)label {
  NSUserDefaults *d=NSUserDefaults.standardUserDefaults;
- if(_other && (UInt32)[d integerForKey:[_other key:@"Code"]]==code && (UInt32)[d integerForKey:[_other key:@"Modifiers"]]==mods){_status=[NSString stringWithFormat:NSLocalizedString(@"%@ is the %@ shortcut. Choose other keys.",@"Settings status; the first argument is a shortcut such as ⌥⌘V, the second a menu item name such as Clipboard History"),label,_other->_menu];return NO;}
- NSInteger oldCode=[d integerForKey:[self key:@"Code"]],oldMods=[d integerForKey:[self key:@"Modifiers"]];NSString *oldLabel=self.label;
+ if(_other && !_other.cleared && (UInt32)[d integerForKey:[_other key:@"Code"]]==code && (UInt32)[d integerForKey:[_other key:@"Modifiers"]]==mods){_status=[NSString stringWithFormat:NSLocalizedString(@"%@ is the %@ shortcut. Choose other keys.",@"Settings status; the first argument is a shortcut such as ⌥⌘V, the second a menu item name such as Clipboard History"),label,_other->_menu];return NO;}
+ NSInteger oldCode=[d integerForKey:[self key:@"Code"]],oldMods=[d integerForKey:[self key:@"Modifiers"]];NSString *oldLabel=self.label;BOOL oldCleared=self.cleared;[d removeObjectForKey:[self key:@"Cleared"]];
  [d setInteger:code forKey:[self key:@"Code"]];[d setInteger:mods forKey:[self key:@"Modifiers"]];[d setObject:label forKey:[self key:@"Label"]];
  if([self registerSaved])return YES;
- OSStatus error=_error;[d setInteger:oldCode forKey:[self key:@"Code"]];[d setInteger:oldMods forKey:[self key:@"Modifiers"]];[d setObject:oldLabel forKey:[self key:@"Label"]];
+ OSStatus error=_error;[d setInteger:oldCode forKey:[self key:@"Code"]];[d setInteger:oldMods forKey:[self key:@"Modifiers"]];[d setObject:oldLabel forKey:[self key:@"Label"]];[d setBool:oldCleared forKey:[self key:@"Cleared"]];
  if([self registerSaved])_status=error==eventHotKeyExistsErr?[NSString stringWithFormat:NSLocalizedString(@"%@ is in use by another app. Superhound keeps %@.",@"Settings status; both arguments are shortcuts such as ⌘Space"),label,oldLabel]:[NSString stringWithFormat:NSLocalizedString(@"%@ is unavailable (error %d). Superhound keeps %@.",@"Settings status; the first and third arguments are shortcuts, the second an error number"),label,(int)error,oldLabel];
  return NO;
 }

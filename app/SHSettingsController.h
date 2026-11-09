@@ -13,6 +13,8 @@ void SHChooseFolders(NSWindow *window,SHLibrary *library,NSString *replacing);
 @interface SHShortcutButton : NSButton
 - (instancetype)initWithFrame:(NSRect)frame hotKey:(SHHotKey *)hotKey;
 @property(nonatomic,copy) void (^changed)(void);
+// YES lets Delete during a recording remove the shortcut; the button then shows None.
+@property(nonatomic) BOOL allowsClear;
 // Shows the saved keys, unless a recording runs.
 - (void)showKeys;
 @end

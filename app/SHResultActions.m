@@ -49,7 +49,9 @@ static void PressText(NSString *text,NSUInteger tries,void (^completion)(NSStrin
  BOOL waiting=NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier==NSProcessInfo.processInfo.processIdentifier;
  if(waiting && tries){dispatch_after(dispatch_time(DISPATCH_TIME_NOW,50*NSEC_PER_MSEC),dispatch_get_main_queue(),^{PressText(text,tries-1,completion);});return;}
  if(waiting){Copy(text);completion(NSLocalizedString(@"The emoji is copied. Superhound could not return to the previous app, so nothing was inserted.",nil));return;}
- CGEventSourceRef source=CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+ // The app is in front before its window has focus again, so the key presses wait a moment longer.
+ if(tries!=NSUIntegerMax){dispatch_after(dispatch_time(DISPATCH_TIME_NOW,120*NSEC_PER_MSEC),dispatch_get_main_queue(),^{PressText(text,NSUIntegerMax,completion);});return;}
+ CGEventSourceRef source=CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
  for(NSString *chunk in SHTypingChunks(text,20)){
   unichar characters[20]={0};NSUInteger length=MIN(chunk.length,(NSUInteger)20);[chunk getCharacters:characters range:NSMakeRange(0,length)];
   for(int down=1;down>=0;down--){CGEventRef key=CGEventCreateKeyboardEvent(source,0,down);CGEventSetFlags(key,0);CGEventKeyboardSetUnicodeString(key,length,characters);CGEventPost(kCGHIDEventTap,key);CFRelease(key);}

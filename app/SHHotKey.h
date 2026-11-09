@@ -12,6 +12,9 @@
 - (BOOL)registerSaved;
 // YES keeps the shortcut unregistered, so its keys stay free for other apps; registerSaved then only removes it and returns YES. Set it before registerSaved.
 @property(nonatomic) BOOL off;
+// YES after clear: the user removed the shortcut (defaults key <name>Cleared). It stays unregistered until new keys are recorded or useDefault runs.
+@property(nonatomic,readonly) BOOL cleared;
+- (void)clear;
 // Stops the shortcut until the next registerSaved, so a recorder in this app can receive its keys.
 - (void)pause;
 - (BOOL)recordEvent:(NSEvent *)event;
