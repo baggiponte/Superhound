@@ -225,14 +225,6 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
  NSRect frame=screen.visibleFrame;_top=NSMaxY(frame)-MAX(0,MIN(100,NSHeight(frame)-(Top+MaxRows+Bottom)-10));_floor=NSMinY(frame);[self.window setFrameOrigin:NSMakePoint(NSMidX(frame)-Width/2,NSMinY(self.window.frame))];[self resize];
  [NSApp activateIgnoringOtherApps:YES];[self.window makeKeyAndOrderFront:nil];[self.window makeFirstResponder:_field];
  [_field selectText:nil];[self search:YES];SHMeasure(@"panel_activation",activated);
- if(!open && !_licensed)[self remind];
-}
-// Every tenth opening asks for a license. Return does nothing, so a fast Return press cannot open the purchase page.
-- (void)remind {
- NSUserDefaults *d=NSUserDefaults.standardUserDefaults;NSInteger opens=[d integerForKey:@"unlicensedOpens"]+1;[d setInteger:opens forKey:@"unlicensedOpens"];if(opens%10)return;
- NSAlert *alert=NSAlert.new;alert.messageText=NSLocalizedString(@"Become a Supporter",@"Title of the alert that asks for a license every tenth opening");alert.informativeText=NSLocalizedString(@"Superhound is free, and all features keep working. A Supporter License, $15 once for 3 Macs, supports development.",nil);
- NSButton *buy=[alert addButtonWithTitle:NSLocalizedString(@"Get a Supporter License",@"Button that opens the purchase page")];buy.keyEquivalent=@"";NSButton *later=[alert addButtonWithTitle:NSLocalizedString(@"Not Now",@"Alert button")];later.keyEquivalent=@"\e";
- [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response){if(response==NSAlertFirstButtonReturn)[self buy:nil];else [self.window makeFirstResponder:self->_field];}];
 }
 - (void)dismiss:(BOOL)restore {
  [self clearCompletion];[_queries cancel];_queuedOpen=nil;[self hover:NO];if(self.window.attachedSheet)[self.window endSheet:self.window.attachedSheet];[self.window orderOut:nil];_error=nil;

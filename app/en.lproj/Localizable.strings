@@ -91,8 +91,7 @@
 /* No comment */
 "Apps are included automatically. Files are searched only inside folders you select. File contents stay unread." = "Apps are included automatically. Files are searched only inside folders you select. File contents stay unread.";
 
-/* Link in the panel footer of an unlicensed copy, after a heart, and the title of the reminder every tenth opening; it opens the license key window; keep it short
-   Title of the alert that asks for a license every tenth opening */
+/* Link in the panel footer of an unlicensed copy, after a heart, and the title of the reminder every tenth opening; it opens the license key window; keep it short */
 "Become a Supporter" = "Become a Supporter";
 
 /* Alert button */
@@ -297,9 +296,6 @@
 
 /* Shortcut button title when the user removed the shortcut; 170 points wide */
 "None" = "None";
-
-/* Alert button */
-"Not Now" = "Not Now";
 
 /* No comment */
 "Not enough memory to prepare search. Remove a large search location and refresh." = "Not enough memory to prepare search. Remove a large search location and refresh.";
@@ -508,9 +504,6 @@
 
 /* No comment */
 "Superhound is already licensed" = "Superhound is already licensed";
-
-/* No comment */
-"Superhound is free, and all features keep working. A Supporter License, $15 once for 3 Macs, supports development." = "Superhound is free, and all features keep working. A Supporter License, $15 once for 3 Macs, supports development.";
 
 /* No comment */
 "Superhound is licensed" = "Superhound is licensed";

@@ -297,9 +297,6 @@
 /* No comment */
 "No sound output is available." = "Aucune sortie audio n’est disponible.";
 
-/* Alert button */
-"Not Now" = "Pas maintenant";
-
 /* No comment */
 "Not enough memory to prepare search. Remove a large search location and refresh." = "Mémoire insuffisante pour préparer la recherche. Retirez un grand emplacement de recherche et réindexez.";
 
@@ -503,9 +500,6 @@
 
 /* No comment */
 "Superhound is already licensed" = "Superhound dispose déjà d’une licence";
-
-/* No comment */
-"Superhound is free, and all features keep working. A Supporter License, $15 once for 3 Macs, supports development." = "Superhound est gratuit et toutes les fonctionnalités restent disponibles. Une licence Supporter, $15 en paiement unique pour 3 Mac, soutient le développement.";
 
 /* No comment */
 "Superhound is licensed" = "Superhound dispose d’une licence";

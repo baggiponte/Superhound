@@ -297,9 +297,6 @@
 /* No comment */
 "No sound output is available." = "没有可用的声音输出。";
 
-/* Alert button */
-"Not Now" = "以后";
-
 /* No comment */
 "Not enough memory to prepare search. Remove a large search location and refresh." = "内存不足，无法准备搜索。请移除一个较大的搜索位置，然后刷新。";
 
@@ -503,9 +500,6 @@
 
 /* No comment */
 "Superhound is already licensed" = "Superhound已获得许可";
-
-/* No comment */
-"Superhound is free, and all features keep working. A Supporter License, $15 once for 3 Macs, supports development." = "Superhound免费，所有功能均可继续使用。支持者许可证（一次性付费$15，适用于3台Mac）用于支持开发。";
 
 /* No comment */
 "Superhound is licensed" = "Superhound已获得许可";
