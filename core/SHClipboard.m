@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 static const NSUInteger Limit=500,Longest=100000;
+NSString *const SHClipboardHistoryKey=@"clipboardHistory";
+BOOL SHClipboardHistoryOn(NSUserDefaults *defaults){return ![defaults objectForKey:SHClipboardHistoryKey] || [defaults boolForKey:SHClipboardHistoryKey];}
 static NSString *Title(NSString *text){
  for(NSString *line in [text componentsSeparatedByCharactersInSet:NSCharacterSet.newlineCharacterSet]){NSString *t=[line stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];if(t.length)return t.length>200?[t substringWithRange:[t rangeOfComposedCharacterSequencesForRange:NSMakeRange(0,200)]]:t;}
  return @"";

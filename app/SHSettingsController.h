@@ -18,6 +18,8 @@ void SHChooseFolders(NSWindow *window,SHLibrary *library,NSString *replacing);
 @end
 @interface SHSettingsController : NSWindowController
 - (instancetype)initWithLibrary:(SHLibrary *)library hotKey:(SHHotKey *)hotKey historyKey:(SHHotKey *)historyKey;
+// Runs after the switch Keep a clipboard history writes the defaults key clipboardHistory.
+@property(nonatomic,copy) void (^clipboardChanged)(void);
 - (void)updateRoots:(NSArray<NSDictionary *> *)roots message:(NSString *)message;
 - (void)show;
 @end

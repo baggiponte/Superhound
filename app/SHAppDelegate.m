@@ -33,17 +33,18 @@ static NSString *const LicensePublicKey=@"BB1mBfflJqWXPJerDDR+MLSwGOCcP/HFGM8f+H
  NSURL *state=[base URLByAppendingPathComponent:@"Superhound" isDirectory:YES];
  _library=[[SHLibrary alloc] initWithStateURL:state];
  _hotKey=[[SHHotKey alloc] initWithName:@"shortcut" identifier:1 code:kVK_Space modifiers:cmdKey label:@"⌘Space" menu:NSLocalizedString(@"Search",@"Menu bar menu item that opens the search panel; keep it short")];[_hotKey registerSaved];
- _historyKey=[[SHHotKey alloc] initWithName:@"historyShortcut" identifier:2 code:kVK_ANSI_V modifiers:cmdKey|optionKey label:@"⌥⌘V" menu:NSLocalizedString(@"Clipboard History",@"Menu bar menu item that opens the clipboard history; keep it short")];[_historyKey registerSaved];
+ _historyKey=[[SHHotKey alloc] initWithName:@"historyShortcut" identifier:2 code:kVK_ANSI_V modifiers:cmdKey|optionKey label:@"⌥⌘V" menu:NSLocalizedString(@"Clipboard History",@"Menu bar menu item that opens the clipboard history; keep it short")];
  _panel=[[SHSearchPanelController alloc] initWithQueries:SHQueryController.new];_panel.emoji=[[SHEmoji alloc] initWithURL:[NSBundle.mainBundle URLForResource:@"emoji" withExtension:@"tsv"]];_panel.usage=[[SHUsage alloc] initWithURL:[state URLByAppendingPathComponent:@"usage.plist"]];_settings=[[SHSettingsController alloc] initWithLibrary:_library hotKey:_hotKey historyKey:_historyKey];_welcome=[[SHWelcomeController alloc] initWithLibrary:_library hotKey:_hotKey historyKey:_historyKey];
  _panel.licensed=_license.licensed;
- _clipboard=[[SHClipboard alloc] initWithURL:[state URLByAppendingPathComponent:@"clipboard.plist"]];_panel.clipboard=_clipboard;_pasteboardCount=NSPasteboard.generalPasteboard.changeCount;
+ _clipboard=[[SHClipboard alloc] initWithURL:[state URLByAppendingPathComponent:@"clipboard.plist"]];_panel.clipboard=_clipboard;
  __weak typeof(self) weak=self;
  _activation.changed=^{SHAppDelegate *self=weak;if(self)self->_panel.licensed=self->_license.licensed;};_panel.enterLicense=^{SHAppDelegate *self=weak;[self->_activation enterKey:nil];};
  _updater=SHUpdater.new;_updater.changed=^{SHAppDelegate *self=weak;if(self)self->_panel.update=self->_updater.busy?nil:self->_updater.latest.version;};_panel.installUpdate=^{SHAppDelegate *self=weak;[self->_updater install];};
  _welcome.openSearch=^{[weak search:nil];};_hotKey.invoked=^{[weak search:nil];};_historyKey.invoked=^{[weak history:nil];};_hotKey.other=_historyKey;_historyKey.other=_hotKey;
- // macOS sends no notice when the pasteboard changes, so its change count is read twice a second.
- _pasteboardTimer=[NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer *timer){(void)timer;[weak readPasteboard];}];_pasteboardTimer.tolerance=0.25;
- _panel.openResult=^(NSDictionary *result,NSString *action,NSURL *application){[SHResultActions perform:action result:result application:application completion:^(NSString *error){SHAppDelegate *self=weak;if(error){[self->_panel showError:error];if(![@[@"command",@"clipboard",@"url",@"web"] containsObject:result[@"type"]])[self->_library refresh];}else if(![@[@"paste",@"trash"] containsObject:action])[self->_welcome resultOpened];}];};
+ [self applyClipboardHistory];
+ // Turning the history off in Settings offers to delete what it kept.
+ _settings.clipboardChanged=^{SHAppDelegate *self=weak;if(!self)return;[self applyClipboardHistory];if(!SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults) && self->_clipboard.count)[self clearHistory:nil];};
+ _panel.openResult=^(NSDictionary *result,NSString *action,NSURL *application){[SHResultActions perform:action result:result application:application completion:^(NSString *error){SHAppDelegate *self=weak;if(error){[self->_panel showError:error];if(![@[@"command",@"clipboard",@"emoji",@"url",@"web"] containsObject:result[@"type"]])[self->_library refresh];}else if(![@[@"paste",@"trash"] containsObject:action])[self->_welcome resultOpened];}];};
  _library.updated=^(SHSearchSnapshot *snapshot,NSArray<NSDictionary *> *roots,NSString *message){
   SHAppDelegate *self=weak;if(!self)return;
   // The item count is shown in Settings; the panel shows only indexing and coverage notes.
@@ -70,13 +71,21 @@ static NSString *const LicensePublicKey=@"BB1mBfflJqWXPJerDDR+MLSwGOCcP/HFGM8f+H
  SHMeasure(@"launch_delegate_to_ready",launched);
 }
 - (void)search:(id)sender {(void)sender;[_panel toggle];}
-- (void)history:(id)sender {(void)sender;[_panel toggleHistory];}
+- (void)history:(id)sender {(void)sender;if(SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults))[_panel toggleHistory];}
+// With the history off, the pasteboard is not read and the history shortcut is not registered, so another clipboard app can use its keys.
+- (void)applyClipboardHistory {
+ BOOL on=SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults);_historyKey.off=!on;[_historyKey registerSaved];_panel.clipboardHistory=on;
+ [_pasteboardTimer invalidate];_pasteboardTimer=nil;if(!on)return;
+ // macOS sends no notice when the pasteboard changes, so its change count is read twice a second; copies made while the history was off are not kept.
+ _pasteboardCount=NSPasteboard.generalPasteboard.changeCount;__weak typeof(self) weak=self;
+ _pasteboardTimer=[NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer *timer){(void)timer;[weak readPasteboard];}];_pasteboardTimer.tolerance=0.25;
+}
 - (void)clearHistory:(id)sender {
  (void)sender;[NSApp activateIgnoringOtherApps:YES];NSAlert *alert=NSAlert.new;alert.messageText=NSLocalizedString(@"Clear the clipboard history?",nil);alert.informativeText=[NSString stringWithFormat:NSLocalizedString(@"All %@ copied items are deleted from this Mac. You cannot undo this.",@"The argument is the number of items"),[NSNumberFormatter localizedStringFromNumber:@(_clipboard.count) numberStyle:NSNumberFormatterDecimalStyle]];[alert addButtonWithTitle:NSLocalizedString(@"Clear History",@"Alert button")];[alert addButtonWithTitle:NSLocalizedString(@"Cancel",@"Alert button")];
  if([alert runModal]==NSAlertFirstButtonReturn)[_clipboard clear];
 }
 - (void)readPasteboard {
- NSPasteboard *board=NSPasteboard.generalPasteboard;NSInteger count=board.changeCount;if(count==_pasteboardCount)return;_pasteboardCount=count;
+ if(!_pasteboardTimer)return;NSPasteboard *board=NSPasteboard.generalPasteboard;NSInteger count=board.changeCount;if(count==_pasteboardCount)return;_pasteboardCount=count;
  // The app in front when the change is read is named as the source; Superhound marks its own copies.
  NSArray<NSString *> *types=board.types;NSRunningApplication *front=NSWorkspace.sharedWorkspace.frontmostApplication;BOOL own=[types containsObject:SHOwnCopyType];
  [_clipboard addText:[board stringForType:NSPasteboardTypeString] types:types application:own?nil:front.bundleIdentifier source:own?@"Superhound":front.localizedName];
@@ -97,7 +106,7 @@ static NSString *const LicensePublicKey=@"BB1mBfflJqWXPJerDDR+MLSwGOCcP/HFGM8f+H
 }
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
  if(item.action==@selector(installUpdate:)){item.hidden=!_updater.latest;item.title=_updater.latest?[NSString stringWithFormat:NSLocalizedString(@"Update to %@…",@"Menu bar menu item; the argument is a version number such as 0.5.0"),_updater.latest.version]:NSLocalizedString(@"Update",@"Menu bar menu item; shown only when an update is ready");return !_updater.busy;}
- if(item.action==@selector(license:))item.title=_license.licensed?NSLocalizedString(@"Deactivate License…",@"Menu bar menu item; keep it short"):NSLocalizedString(@"Enter License…",@"Menu bar menu item; keep it short");if(item.action==@selector(clearHistory:))return _clipboard.count>0;if(item.action==@selector(loginItem:))item.state=SMAppService.mainAppService.status==SMAppServiceStatusEnabled?NSControlStateValueOn:NSControlStateValueOff;return YES;}
+ if(item.action==@selector(license:))item.title=_license.licensed?NSLocalizedString(@"Deactivate License…",@"Menu bar menu item; keep it short"):NSLocalizedString(@"Enter License…",@"Menu bar menu item; keep it short");if(item.action==@selector(history:) || item.action==@selector(clearHistory:))item.hidden=!SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults);if(item.action==@selector(clearHistory:))return _clipboard.count>0;if(item.action==@selector(loginItem:))item.state=SMAppService.mainAppService.status==SMAppServiceStatusEnabled?NSControlStateValueOn:NSControlStateValueOff;return YES;}
 // Takes back what Superhound added to this Mac: the license activation, Spotlight's ⌘Space change, the login item, its data and settings, and the app with its kept previous versions.
 - (void)uninstall:(id)sender {
  (void)sender;[NSApp activateIgnoringOtherApps:YES];NSAlert *alert=NSAlert.new;alert.messageText=NSLocalizedString(@"Uninstall Superhound?",nil);

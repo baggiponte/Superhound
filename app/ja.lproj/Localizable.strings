@@ -249,6 +249,9 @@
 /* Alert button */
 "Install and Relaunch" = "インストールして再起動";
 
+/* Settings check box; 220 points wide */
+"Keep a clipboard history" = "クリップボード履歴を保存";
+
 /* Settings button that opens System Settings → Keyboard; 199 points wide */
 "Keyboard Settings…" = "キーボード設定…";
 
@@ -263,6 +266,9 @@
 
 /* Placeholder of the license key field */
 "License key" = "ライセンスキー";
+
+/* Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space */
+"Press %@ to search." = "%@で検索します。";
 
 /* About window credits */
 "Supporter License for this Mac." = "このMacのサポーターライセンスは有効です。";
@@ -540,6 +546,9 @@
 
 /* Label above the result list */
 "The clipboard history is empty" = "クリップボード履歴は空です";
+
+/* Settings status; the argument is a shortcut such as ⌥⌘V */
+"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps." = "クリップボード履歴はオフです。Superhoundはコピーした内容を読み取らず、%@はほかのアプリで使えます。";
 
 /* Error in the search panel */
 "The command did not finish." = "コマンドが完了しませんでした。";

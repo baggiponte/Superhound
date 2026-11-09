@@ -130,7 +130,7 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
 - (instancetype)initWithQueries:(SHQueryController *)queries {
  SHPanel *panel=[[SHPanel alloc] initWithContentRect:NSMakeRect(0,0,Width,Top+MaxRows+Bottom) styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO];
  if(!(self=[super initWithWindow:panel]))return nil;
- _queries=queries;_results=@[];_indexing=YES;_coverage=NSLocalizedString(@"Preparing search",@"Note at the right of the search panel while the app starts; keep it short");_icons=NSCache.new;_icons.countLimit=128;_loadingIcons=NSMutableSet.set;_iconQueue=dispatch_queue_create("com.superhound.icons",DISPATCH_QUEUE_SERIAL);
+ _queries=queries;_results=@[];_indexing=YES;_clipboardHistory=YES;_coverage=NSLocalizedString(@"Preparing search",@"Note at the right of the search panel while the app starts; keep it short");_icons=NSCache.new;_icons.countLimit=128;_loadingIcons=NSMutableSet.set;_iconQueue=dispatch_queue_create("com.superhound.icons",DISPATCH_QUEUE_SERIAL);
  panel.title=@"Superhound";panel.level=NSFloatingWindowLevel;panel.hidesOnDeactivate=NO;panel.collectionBehavior=NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary;panel.delegate=self;panel.releasedWhenClosed=NO;
  panel.opaque=NO;panel.backgroundColor=NSColor.clearColor;panel.hasShadow=YES;panel.appearance=[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];panel.accessibilityIdentifier=@"superhound.search.panel";
  // A dark blur with a charcoal tint keeps strong wallpaper colors out; the tint carries the one border.
@@ -211,6 +211,7 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
 - (void)enterLicense:(id)sender {(void)sender;[self dismiss:NO];if(self.enterLicense)self.enterLicense();}
 - (void)toggle {[self show:NO];}
 - (void)toggleHistory {[self show:YES];}
+- (void)setClipboardHistory:(BOOL)clipboardHistory {_clipboardHistory=clipboardHistory;if(!clipboardHistory && _history && self.window.isVisible)[self dismiss:NO];}
 // The other shortcut switches the open panel to its mode and keeps the app to return to.
 - (void)show:(BOOL)history {
  double activated=SHTime();BOOL open=self.window.isVisible && (self.window.isKeyWindow || self.window.attachedSheet);
@@ -283,7 +284,7 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
  __weak typeof(self) weak=self;NSDictionary *answer=[SHAnswer answerForQuery:self.query],*address=[SHWeb addressForQuery:self.query],*web=[SHWeb searchForQuery:self.query engine:[NSUserDefaults.standardUserDefaults stringForKey:@"searchEngine"]];
  NSArray<NSDictionary *> *preferred=[_usage preferredForQuery:self.query],*emoji=[_emoji search:self.query limit:8];
  // Shorter queries would match too much copied text.
- NSArray<NSDictionary *> *clips=[self.query stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet].length>=3?[_clipboard search:self.query limit:2]:@[];
+ NSArray<NSDictionary *> *clips=_clipboardHistory && [self.query stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet].length>=3?[_clipboard search:self.query limit:2]:@[];
  NSString *query=self.query;_submitted=query;
  [_queries submit:query preferred:preferred completion:^(NSArray<NSDictionary *> *results){
   SHSearchPanelController *self=weak;if(!self || !self.window.isVisible || self->_history)return;

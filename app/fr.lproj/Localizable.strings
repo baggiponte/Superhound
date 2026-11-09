@@ -249,6 +249,9 @@
 /* Alert button */
 "Install and Relaunch" = "Installer et relancer";
 
+/* Settings check box; 220 points wide */
+"Keep a clipboard history" = "Garder un historique du presse-papiers";
+
 /* Settings button that opens System Settings → Keyboard; 199 points wide */
 "Keyboard Settings…" = "Réglages Clavier…";
 
@@ -263,6 +266,9 @@
 
 /* Placeholder of the license key field */
 "License key" = "Clé de licence";
+
+/* Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space */
+"Press %@ to search." = "Appuyez sur %@ pour rechercher.";
 
 /* About window credits */
 "Supporter License for this Mac." = "Licence Supporter pour ce Mac.";
@@ -540,6 +546,9 @@
 
 /* Label above the result list */
 "The clipboard history is empty" = "L’historique du presse-papiers est vide";
+
+/* Settings status; the argument is a shortcut such as ⌥⌘V */
+"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps." = "L’historique du presse-papiers est désactivé. Superhound ne lit pas ce que vous copiez, et %@ reste libre pour d’autres apps.";
 
 /* Error in the search panel */
 "The command did not finish." = "La commande n’a pas abouti.";

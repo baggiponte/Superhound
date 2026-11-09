@@ -249,6 +249,9 @@
 /* Alert button */
 "Install and Relaunch" = "Installieren und neu starten";
 
+/* Settings check box; 220 points wide */
+"Keep a clipboard history" = "Zwischenablage-Verlauf führen";
+
 /* Settings button that opens System Settings → Keyboard; 199 points wide */
 "Keyboard Settings…" = "Tastatureinstellungen …";
 
@@ -263,6 +266,9 @@
 
 /* Placeholder of the license key field */
 "License key" = "Lizenzschlüssel";
+
+/* Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space */
+"Press %@ to search." = "Drücke %@ für die Suche.";
 
 /* About window credits */
 "Supporter License for this Mac." = "Unterstützerlizenz für diesen Mac.";
@@ -540,6 +546,9 @@
 
 /* Label above the result list */
 "The clipboard history is empty" = "Der Zwischenablage-Verlauf ist leer";
+
+/* Settings status; the argument is a shortcut such as ⌥⌘V */
+"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps." = "Der Zwischenablage-Verlauf ist aus. Superhound liest nicht, was du kopierst, und %@ ist für andere Apps frei.";
 
 /* Error in the search panel */
 "The command did not finish." = "Der Befehl wurde nicht abgeschlossen.";

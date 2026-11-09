@@ -256,6 +256,9 @@
 /* Alert button */
 "Install and Relaunch" = "Install and Relaunch";
 
+/* Settings check box; 220 points wide */
+"Keep a clipboard history" = "Keep a clipboard history";
+
 /* Settings button that opens System Settings → Keyboard; 199 points wide */
 "Keyboard Settings…" = "Keyboard Settings…";
 
@@ -339,6 +342,9 @@
 
 /* Welcome window text; the argument is a shortcut such as ⌘Space; safri is a typing error for Safari, keep it as it is */
 "Press %@ and type part of an app name. Typos work, such as safri." = "Press %@ and type part of an app name. Typos work, such as safri.";
+
+/* Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space */
+"Press %@ to search." = "Press %@ to search.";
 
 /* Welcome window text; the arguments are shortcuts such as ⌘Space and ⌥⌘V */
 "Press %@ to search. Press %@ for the clipboard history." = "Press %@ to search. Press %@ for the clipboard history.";
@@ -546,6 +552,9 @@
 
 /* Label above the result list */
 "The clipboard history is empty" = "The clipboard history is empty";
+
+/* Settings status; the argument is a shortcut such as ⌥⌘V */
+"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps." = "The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps.";
 
 /* Error in the search panel */
 "The command did not finish." = "The command did not finish.";

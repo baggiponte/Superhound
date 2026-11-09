@@ -7,6 +7,9 @@ int main(void){@autoreleasepool{
  NSURL *tmp=[NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString]];
  assert([NSFileManager.defaultManager createDirectoryAtURL:tmp withIntermediateDirectories:YES attributes:nil error:nil]);
  NSURL *file=[tmp URLByAppendingPathComponent:@"clipboard.plist"];
+ // The history is on unless the defaults key turns it off.
+ NSString *suite=[@"com.superhound.tests." stringByAppendingString:NSUUID.UUID.UUIDString];NSUserDefaults *defaults=[[NSUserDefaults alloc] initWithSuiteName:suite];assert(SHClipboardHistoryOn(defaults));
+ [defaults setBool:NO forKey:SHClipboardHistoryKey];assert(!SHClipboardHistoryOn(defaults));[defaults setBool:YES forKey:SHClipboardHistoryKey];assert(SHClipboardHistoryOn(defaults));[defaults removePersistentDomainForName:suite];
  SHClipboard *c=[[SHClipboard alloc] initWithURL:file];assert(c.count==0 && [c search:@"" limit:8].count==0);
  NSArray *text=@[@"public.utf8-plain-text"];
  assert([c addText:@"first copy" types:text application:@"com.apple.TextEdit" source:@"TextEdit"]);
@@ -55,5 +58,5 @@ int main(void){@autoreleasepool{
  // No temporary file is left next to the history.
  assert([[NSFileManager.defaultManager contentsOfDirectoryAtPath:tmp.path error:nil] isEqual:@[@"clipboard.plist"]]);
  [NSFileManager.defaultManager removeItemAtURL:tmp error:nil];
- puts("PASS clipboard: order, repeats, search folding, concealed and password copies, length limit, 500-item limit, removal, saved file, damaged file");
+ puts("PASS clipboard: on/off setting, order, repeats, search folding, concealed and password copies, length limit, 500-item limit, removal, saved file, damaged file");
 }return 0;}

@@ -249,6 +249,9 @@
 /* Alert button */
 "Install and Relaunch" = "安装并重新打开";
 
+/* Settings check box; 220 points wide */
+"Keep a clipboard history" = "保留剪贴板历史记录";
+
 /* Settings button that opens System Settings → Keyboard; 199 points wide */
 "Keyboard Settings…" = "键盘设置…";
 
@@ -263,6 +266,9 @@
 
 /* Placeholder of the license key field */
 "License key" = "许可证密钥";
+
+/* Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space */
+"Press %@ to search." = "按%@搜索。";
 
 /* About window credits */
 "Supporter License for this Mac." = "此Mac已有支持者许可证。";
@@ -540,6 +546,9 @@
 
 /* Label above the result list */
 "The clipboard history is empty" = "剪贴板历史记录为空";
+
+/* Settings status; the argument is a shortcut such as ⌥⌘V */
+"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps." = "剪贴板历史记录已关闭。Superhound不会读取你拷贝的内容，%@可供其他App使用。";
 
 /* Error in the search panel */
 "The command did not finish." = "命令未完成。";
