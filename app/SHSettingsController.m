@@ -2,6 +2,7 @@
 #import "SHSpotlight.h"
 #import "SHWeb.h"
 #import "SHUpdater.h"
+#import "SHClipboard.h"
 @implementation SHShortcutButton {SHHotKey *_hotKey;id _monitor;}
 - (instancetype)initWithFrame:(NSRect)frame hotKey:(SHHotKey *)hotKey {
  if((self=[super initWithFrame:frame])){_hotKey=hotKey;self.bezelStyle=NSBezelStyleRounded;self.title=hotKey.label;self.target=self;self.action=@selector(record:);}return self;
@@ -25,7 +26,7 @@
 @end
 @implementation SHSettingsController {
  SHLibrary *_library;SHHotKey *_hotKey,*_historyKey;NSArray<NSDictionary *> *_roots;
- NSTableView *_table;NSTextField *_message,*_shortcutStatus,*_historyStatus;SHShortcutButton *_recorder,*_historyRecorder;NSButton *_remove,*_reselect,*_spotlight;
+ NSTableView *_table;NSTextField *_message,*_shortcutStatus,*_historyStatus;SHShortcutButton *_recorder,*_historyRecorder;NSButton *_remove,*_reselect,*_spotlight,*_historyDefault,*_keepHistory;
 }
 NSTextField *SHLabel(NSView *view,NSString *text,NSRect frame,CGFloat size,BOOL secondary) {
  NSTextField *label=[NSTextField wrappingLabelWithString:text];label.frame=frame;label.font=[NSFont systemFontOfSize:size];if(secondary)label.textColor=NSColor.secondaryLabelColor;[view addSubview:label];return label;
@@ -62,7 +63,9 @@ NSButton *SHButton(NSView *view,NSString *title,NSRect frame,id target,SEL actio
  SHLabel(view,NSLocalizedString(@"Clipboard",@"Section label: the clipboard history; Settings row label (160 points wide) and search panel band; keep it short"),NSMakeRect(24,68,160,24),15,NO);
  _historyRecorder=[[SHShortcutButton alloc] initWithFrame:NSMakeRect(189,62,170,32) hotKey:historyKey];_historyRecorder.accessibilityLabel=NSLocalizedString(@"Record clipboard history shortcut",@"VoiceOver label of the shortcut button");[view addSubview:_historyRecorder];
  _historyRecorder.changed=^{[weak shortcutStatus];};
- SHButton(view,[NSString stringWithFormat:NSLocalizedString(@"Use %@",@"Settings button that restores the default shortcut; the argument is a shortcut such as ⌥⌘V; 120 points wide"),historyKey.defaultLabel],NSMakeRect(365,62,120,32),self,@selector(defaultHistoryShortcut:));
+ _historyDefault=SHButton(view,[NSString stringWithFormat:NSLocalizedString(@"Use %@",@"Settings button that restores the default shortcut; the argument is a shortcut such as ⌥⌘V; 120 points wide"),historyKey.defaultLabel],NSMakeRect(365,62,120,32),self,@selector(defaultHistoryShortcut:));
+ // Off, the pasteboard is not read and the history shortcut is free for another clipboard app.
+ _keepHistory=[NSButton checkboxWithTitle:NSLocalizedString(@"Keep a clipboard history",@"Settings check box; 220 points wide") target:self action:@selector(keepHistory:)];_keepHistory.frame=NSMakeRect(495,66,220,24);_keepHistory.accessibilityIdentifier=@"superhound.clipboard.history";[view addSubview:_keepHistory];
  _historyStatus=SHLabel(view,@"",NSMakeRect(24,12,690,44),12,NO);_historyStatus.accessibilityIdentifier=@"superhound.history.shortcut.status";
  // The web search row sits under the clipboard row.
  for(NSView *v in view.subviews)[v setFrameOrigin:NSMakePoint(v.frame.origin.x,v.frame.origin.y+44)];
@@ -84,7 +87,8 @@ NSButton *SHButton(NSView *view,NSString *title,NSRect frame,id target,SEL actio
  [self shortcutStatus];[self updateButtons];[window center];return self;
 }
 - (void)show {[_table reloadData];[_table deselectAll:nil];[NSApp activateIgnoringOtherApps:YES];[self.window makeKeyAndOrderFront:nil];[self shortcutStatus];}
-- (void)shortcutStatus {[_recorder showKeys];[_historyRecorder showKeys];_spotlight.state=SHSpotlightEnabled(SHHotKey.spotlightHotKeys)?NSControlStateValueOff:NSControlStateValueOn;_shortcutStatus.stringValue=_hotKey.status?:NSLocalizedString(@"Use Search in the menu bar while setting up your shortcut.",@"Search is the menu item title");_historyStatus.stringValue=_historyKey.status?:@"";}
+- (void)shortcutStatus {[_recorder showKeys];[_historyRecorder showKeys];_spotlight.state=SHSpotlightEnabled(SHHotKey.spotlightHotKeys)?NSControlStateValueOff:NSControlStateValueOn;_shortcutStatus.stringValue=_hotKey.status?:NSLocalizedString(@"Use Search in the menu bar while setting up your shortcut.",@"Search is the menu item title");BOOL clip=SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults);_keepHistory.state=clip?NSControlStateValueOn:NSControlStateValueOff;_historyRecorder.enabled=_historyDefault.enabled=clip;
+ _historyStatus.stringValue=clip?(_historyKey.status?:@""):[NSString stringWithFormat:NSLocalizedString(@"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps.",@"Settings status; the argument is a shortcut such as ⌥⌘V"),_historyKey.label];}
 - (void)updateRoots:(NSArray<NSDictionary *> *)roots message:(NSString *)message {
  NSInteger selected=_table.selectedRow;NSString *identifier=selected>=0 && selected<(NSInteger)_roots.count?_roots[(NSUInteger)selected][@"id"]:nil;
  // A closed window keeps the roots and reloads when it opens (a minimized window counts as open, since the Dock restores it without show): each reload leaves AppKit dependency records behind, and index updates come often.
@@ -111,6 +115,7 @@ void SHChooseFolders(NSWindow *window,SHLibrary *library,NSString *replacing) {
 - (void)refresh:(id)sender {(void)sender;[_library refresh];}
 - (void)exclude:(NSButton *)sender {[_library setExcludeGenerated:sender.state==NSControlStateValueOn];}
 - (void)retry:(id)sender {(void)sender;[_hotKey registerSaved];[_historyKey registerSaved];[self shortcutStatus];}
+- (void)keepHistory:(NSButton *)sender {[NSUserDefaults.standardUserDefaults setBool:sender.state==NSControlStateValueOn forKey:SHClipboardHistoryKey];if(self.clipboardChanged)self.clipboardChanged();[self shortcutStatus];}
 - (void)defaultHistoryShortcut:(id)sender {(void)sender;[_historyKey useDefault];[self shortcutStatus];}
 - (void)spotlight:(NSButton *)sender {
  BOOL saved=[_hotKey replaceSpotlight:sender.state==NSControlStateValueOn];[self shortcutStatus];

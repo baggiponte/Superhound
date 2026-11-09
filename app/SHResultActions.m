@@ -3,6 +3,8 @@
 #import <dlfcn.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <Carbon/Carbon.h>
+#import "SHEmoji.h"
+#import "SHSearchPanelController.h"
 static NSString *Script(NSString *source){
  NSDictionary *error=nil;[[[NSAppleScript alloc] initWithSource:source] executeAndReturnError:&error];NSInteger code=[error[NSAppleScriptErrorNumber] integerValue];
  return !error || code==userCanceledErr?nil:code==errAEEventNotPermitted?NSLocalizedString(@"macOS blocked this command. Allow Superhound in Privacy & Security → Automation.",@"Error in the search panel; Privacy & Security → Automation is the place in System Settings"):NSLocalizedString(@"The command did not finish.",@"Error in the search panel");
@@ -34,10 +36,30 @@ static void PressPaste(NSUInteger tries,void (^completion)(NSString *)){
  for(int down=1;down>=0;down--){CGEventRef key=CGEventCreateKeyboardEvent(source,kVK_ANSI_V,down);CGEventSetFlags(key,kCGEventFlagMaskCommand);CGEventPost(kCGHIDEventTap,key);CFRelease(key);}
  if(source)CFRelease(source);completion(nil);
 }
-// A key press into another app needs Accessibility access. macOS asks once in each launch; without access the text stays copied.
+// A key press into another app needs Accessibility access. macOS asks once in each launch.
+static BOOL Trusted(void){static BOOL asked;BOOL trusted=AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef)@{(__bridge NSString *)kAXTrustedCheckOptionPrompt:@(!asked)});asked=YES;return trusted;}
+static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPasteboard;[board clearContents];[board setString:text forType:NSPasteboardTypeString];[board setString:@"" forType:SHOwnCopyType];}
+// Without access the text stays copied.
 static void Paste(void (^completion)(NSString *)){
- static BOOL asked;BOOL trusted=AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef)@{(__bridge NSString *)kAXTrustedCheckOptionPrompt:@(!asked)});asked=YES;
- if(trusted)PressPaste(20,completion);else completion(NSLocalizedString(@"The text is copied. To paste with Return, allow Superhound in System Settings → Privacy & Security → Accessibility.",@"System Settings → Privacy & Security → Accessibility is the place in System Settings"));
+ if(Trusted())PressPaste(20,completion);else completion(NSLocalizedString(@"The text is copied. To paste with Return, allow Superhound in System Settings → Privacy & Security → Accessibility.",@"System Settings → Privacy & Security → Accessibility is the place in System Settings"));
+}
+// The text goes as key presses that carry it, so the clipboard stays as it is. As with PressPaste, they go when the previous app is in front again; otherwise the text is copied.
+// A key press carries at most 20 UTF-16 units; it has no modifier flags, so a held key does not change the text.
+static void PressText(NSString *text,NSUInteger tries,void (^completion)(NSString *)){
+ BOOL waiting=NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier==NSProcessInfo.processInfo.processIdentifier;
+ if(waiting && tries){dispatch_after(dispatch_time(DISPATCH_TIME_NOW,50*NSEC_PER_MSEC),dispatch_get_main_queue(),^{PressText(text,tries-1,completion);});return;}
+ if(waiting){Copy(text);completion(NSLocalizedString(@"The emoji is copied. Superhound could not return to the previous app, so nothing was inserted.",nil));return;}
+ CGEventSourceRef source=CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+ for(NSString *chunk in SHTypingChunks(text,20)){
+  unichar characters[20]={0};NSUInteger length=MIN(chunk.length,(NSUInteger)20);[chunk getCharacters:characters range:NSMakeRange(0,length)];
+  for(int down=1;down>=0;down--){CGEventRef key=CGEventCreateKeyboardEvent(source,0,down);CGEventSetFlags(key,0);CGEventKeyboardSetUnicodeString(key,length,characters);CGEventPost(kCGHIDEventTap,key);CFRelease(key);}
+ }
+ if(source)CFRelease(source);completion(nil);
+}
+// Without Accessibility access the text is copied instead.
+static void Type(NSString *text,void (^completion)(NSString *)){
+ if(!text.length){completion(nil);return;}
+ if(Trusted())PressText(text,20,completion);else {Copy(text);completion(NSLocalizedString(@"The emoji is copied. To insert emoji with Return, allow Superhound in System Settings → Privacy & Security → Accessibility.",@"System Settings → Privacy & Security → Accessibility is the place in System Settings"));}
 }
 @implementation SHResultActions
 + (void)run:(NSString *)command completion:(void (^)(NSString *))completion {
@@ -65,6 +87,7 @@ static void Paste(void (^completion)(NSString *)){
 }
 + (void)perform:(NSString *)action result:(NSDictionary *)result application:(NSURL *)application completion:(void (^)(NSString *))completion {
  if([action isEqual:@"paste"]){Paste(completion);return;}
+ if([action isEqual:@"type"]){Type(result[@"copy"],completion);return;}
  if([@[@"url",@"web"] containsObject:result[@"type"]]){NSURL *url=[NSURL URLWithString:result[@"url"]];completion(url && [NSWorkspace.sharedWorkspace openURL:url]?nil:NSLocalizedString(@"Could not open this in your browser.",nil));return;}
  BOOL reveal=[action isEqual:@"reveal"];
  if([result[@"type"] isEqual:@"command"]){if(reveal)completion(NSLocalizedString(@"A command has no location in Finder.",nil));else [self run:result[@"path"] completion:completion];return;}

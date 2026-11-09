@@ -10,7 +10,7 @@ static NSString *Version(void){return NSBundle.mainBundle.infoDictionary[@"CFBun
 - (instancetype)init {
  if((self=[super init])){
   NSURLSessionConfiguration *configuration=NSURLSessionConfiguration.ephemeralSessionConfiguration;configuration.timeoutIntervalForRequest=30;configuration.timeoutIntervalForResource=600;_session=[NSURLSession sessionWithConfiguration:configuration];
-  [NSUserDefaults.standardUserDefaults registerDefaults:@{@"updateCheckAutomatically":@YES}];
+  [NSUserDefaults.standardUserDefaults registerDefaults:@{@"updateCheckAutomatically":@NO}];
   // An update must meet this build's own designated requirement, which names the Superhound certificate. An ad-hoc requirement names one code hash, so it cannot match a new build.
   SecCodeRef running=NULL;SecStaticCodeRef code=NULL;CFDictionaryRef info=NULL;
   if(SecCodeCopySelf(kSecCSDefaultFlags,&running)==errSecSuccess && SecCodeCopyStaticCode(running,kSecCSDefaultFlags,&code)==errSecSuccess && SecCodeCopySigningInformation(code,kSecCSSigningInformation,&info)==errSecSuccess && [((__bridge NSDictionary *)info)[(id)kSecCodeInfoCertificates] count])SecCodeCopyDesignatedRequirement(code,kSecCSDefaultFlags,&_requirement);

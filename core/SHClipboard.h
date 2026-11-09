@@ -1,4 +1,7 @@
 #import <Foundation/Foundation.h>
+// The defaults key clipboardHistory: NO turns the clipboard history off (no pasteboard check, no history shortcut, no clipboard rows in a search). A missing value is YES.
+extern NSString *const SHClipboardHistoryKey;
+BOOL SHClipboardHistoryOn(NSUserDefaults *defaults);
 // Text copied in any app, newest first, at most 500 items. Main thread only; the file is written in the background.
 @interface SHClipboard : NSObject
 - (instancetype)initWithURL:(NSURL *)url;

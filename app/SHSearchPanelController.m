@@ -130,7 +130,7 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
 - (instancetype)initWithQueries:(SHQueryController *)queries {
  SHPanel *panel=[[SHPanel alloc] initWithContentRect:NSMakeRect(0,0,Width,Top+MaxRows+Bottom) styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO];
  if(!(self=[super initWithWindow:panel]))return nil;
- _queries=queries;_results=@[];_indexing=YES;_coverage=NSLocalizedString(@"Preparing search",@"Note at the right of the search panel while the app starts; keep it short");_icons=NSCache.new;_icons.countLimit=128;_loadingIcons=NSMutableSet.set;_iconQueue=dispatch_queue_create("com.superhound.icons",DISPATCH_QUEUE_SERIAL);
+ _queries=queries;_results=@[];_indexing=YES;_clipboardHistory=YES;_coverage=NSLocalizedString(@"Preparing search",@"Note at the right of the search panel while the app starts; keep it short");_icons=NSCache.new;_icons.countLimit=128;_loadingIcons=NSMutableSet.set;_iconQueue=dispatch_queue_create("com.superhound.icons",DISPATCH_QUEUE_SERIAL);
  panel.title=@"Superhound";panel.level=NSFloatingWindowLevel;panel.hidesOnDeactivate=NO;panel.collectionBehavior=NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary;panel.delegate=self;panel.releasedWhenClosed=NO;
  panel.opaque=NO;panel.backgroundColor=NSColor.clearColor;panel.hasShadow=YES;panel.appearance=[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];panel.accessibilityIdentifier=@"superhound.search.panel";
  // A dark blur with a charcoal tint keeps strong wallpaper colors out; the tint carries the one border.
@@ -211,6 +211,7 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
 - (void)enterLicense:(id)sender {(void)sender;[self dismiss:NO];if(self.enterLicense)self.enterLicense();}
 - (void)toggle {[self show:NO];}
 - (void)toggleHistory {[self show:YES];}
+- (void)setClipboardHistory:(BOOL)clipboardHistory {_clipboardHistory=clipboardHistory;if(!clipboardHistory && _history && self.window.isVisible)[self dismiss:NO];}
 // The other shortcut switches the open panel to its mode and keeps the app to return to.
 - (void)show:(BOOL)history {
  double activated=SHTime();BOOL open=self.window.isVisible && (self.window.isKeyWindow || self.window.attachedSheet);
@@ -283,7 +284,7 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
  __weak typeof(self) weak=self;NSDictionary *answer=[SHAnswer answerForQuery:self.query],*address=[SHWeb addressForQuery:self.query],*web=[SHWeb searchForQuery:self.query engine:[NSUserDefaults.standardUserDefaults stringForKey:@"searchEngine"]];
  NSArray<NSDictionary *> *preferred=[_usage preferredForQuery:self.query],*emoji=[_emoji search:self.query limit:8];
  // Shorter queries would match too much copied text.
- NSArray<NSDictionary *> *clips=[self.query stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet].length>=3?[_clipboard search:self.query limit:2]:@[];
+ NSArray<NSDictionary *> *clips=_clipboardHistory && [self.query stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet].length>=3?[_clipboard search:self.query limit:2]:@[];
  NSString *query=self.query;_submitted=query;
  [_queries submit:query preferred:preferred completion:^(NSArray<NSDictionary *> *results){
   SHSearchPanelController *self=weak;if(!self || !self.window.isVisible || self->_history)return;
@@ -343,7 +344,7 @@ static void Copy(NSString *text){NSPasteboard *board=NSPasteboard.generalPastebo
  cell.glyph.hidden=!emoji;if(emoji){cell.glyph.stringValue=result[@"emoji"];cell.glyph.frame=NSMakeRect(4,(height-30)/2,36,30);}
  // An app shows its folder only when another result has the same name.
  BOOL shared=NO;for(NSDictionary *other in _results)if(other!=result && [other[@"name"] caseInsensitiveCompare:result[@"name"]]==NSOrderedSame)shared=YES;
- NSString *detail=emoji?NSLocalizedString(@"Emoji · Return to copy",@"Row detail; Return is the key name"):clip?Copied(result):[kind isEqual:@"web"]?NSLocalizedString(@"Web search · Return to open in your browser",@"Row detail; Return is the key name"):web?NSLocalizedString(@"Web address · Return to open in your browser",@"Row detail; Return is the key name"):answer?[NSString stringWithFormat:NSLocalizedString(@"%@ · Return to copy",@"Row detail of a calculation, conversion, or colour; the argument is the typed input such as 2+2; Return is the key name"),result[@"detail"]]:[kind isEqual:@"settings"]?NSLocalizedString(@"System Settings",@"Row detail of a System Settings pane; the name of the macOS app"):[kind isEqual:@"command"]?NSLocalizedString(@"Command",@"Row detail of a system command such as Lock Screen; a noun"):[kind isEqual:@"app"] && !shared?@"":Context(result,_results);
+ NSString *detail=emoji?NSLocalizedString(@"Emoji · Return to paste",@"Row detail; Return is the key name"):clip?Copied(result):[kind isEqual:@"web"]?NSLocalizedString(@"Web search · Return to open in your browser",@"Row detail; Return is the key name"):web?NSLocalizedString(@"Web address · Return to open in your browser",@"Row detail; Return is the key name"):answer?[NSString stringWithFormat:NSLocalizedString(@"%@ · Return to copy",@"Row detail of a calculation, conversion, or colour; the argument is the typed input such as 2+2; Return is the key name"),result[@"detail"]]:[kind isEqual:@"settings"]?NSLocalizedString(@"System Settings",@"Row detail of a System Settings pane; the name of the macOS app"):[kind isEqual:@"command"]?NSLocalizedString(@"Command",@"Row detail of a system command such as Lock Screen; a noun"):[kind isEqual:@"app"] && !shared?@"":Context(result,_results);
  NSTextField *name=cell.textField;name.attributedStringValue=Marked(result[@"name"],[kind isEqual:@"web"]?@"":self.query);
  NSTextField *info=cell.info;info.stringValue=detail;info.lineBreakMode=located || [kind isEqual:@"app"]?NSLineBreakByTruncatingHead:NSLineBreakByTruncatingTail;info.alignment=NSTextAlignmentNatural;
  if(compact){CGFloat width=detail.length?MIN(ceil(info.intrinsicContentSize.width),Text/2):0;name.frame=NSMakeRect(44,(height-18)/2,Text-width-(width?8:0),18);info.frame=NSMakeRect(44+Text-width,(height-16)/2,width,16);info.alignment=NSTextAlignmentRight;}
@@ -393,7 +394,8 @@ static BOOL Located(NSDictionary *result){return ![@[@"command",@"emoji",@"answe
  NSMenuItem *(^add)(NSString *,NSString *,NSString *,NSEventModifierFlags)=^NSMenuItem *(NSString *title,NSString *action,NSString *key,NSEventModifierFlags flags){
   NSMenuItem *item=[menu addItemWithTitle:title action:@selector(chooseAction:) keyEquivalent:key];item.keyEquivalentModifierMask=flags;item.target=self;item.representedObject=@{@"result":result,@"action":action};return item;};
  NSString *type=result[@"type"];
- add(Located(result) || [@[@"url",@"web"] containsObject:type]?NSLocalizedString(@"Open",@"Menu item and footer hint verb: open the selected result; keep it short"):[type isEqual:@"command"]?NSLocalizedString(@"Run",@"Action menu item verb: run a system command"):[type isEqual:@"clipboard"]?NSLocalizedString(@"Paste",@"Menu item and footer hint verb: paste the text"):NSLocalizedString(@"Copy",@"Menu item verb: copy to the clipboard"),@"open",@"\r",0);
+ add(Located(result) || [@[@"url",@"web"] containsObject:type]?NSLocalizedString(@"Open",@"Menu item and footer hint verb: open the selected result; keep it short"):[type isEqual:@"command"]?NSLocalizedString(@"Run",@"Action menu item verb: run a system command"):[type isEqual:@"clipboard"] || [type isEqual:@"emoji"]?NSLocalizedString(@"Paste",@"Menu item and footer hint verb: paste the text"):NSLocalizedString(@"Copy",@"Menu item verb: copy to the clipboard"),@"open",@"\r",0);
+ if([type isEqual:@"emoji"]){add(NSLocalizedString(@"Copy",@"Menu item verb: copy to the clipboard"),@"reveal",@"\r",NSEventModifierFlagCommand);return;}
  if([type isEqual:@"clipboard"]){add(NSLocalizedString(@"Copy",@"Menu item verb: copy to the clipboard"),@"reveal",@"\r",NSEventModifierFlagCommand);[menu addItem:NSMenuItem.separatorItem];add(NSLocalizedString(@"Delete from History",@"Action menu item for a clipboard history item"),@"forget",@"",0);return;}
  // A colour offers each of its forms.
  if(result[@"formats"]){[menu addItem:NSMenuItem.separatorItem];for(NSString *format in result[@"formats"]){NSMutableDictionary *copy=[result mutableCopy];copy[@"copy"]=format;NSMenuItem *item=[menu addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Copy %@",@"Action menu item; the argument is a colour value such as #FF8800 or rgb(255, 136, 0)"),format] action:@selector(chooseAction:) keyEquivalent:@""];item.target=self;item.representedObject=@{@"result":copy,@"action":@"open"};}}
@@ -433,6 +435,8 @@ static BOOL Located(NSDictionary *result){return ![@[@"command",@"emoji",@"answe
   _selectedID=row>=0?rows[(NSUInteger)row][@"id"]:nil;[self updateStatus];if(self.openResult)self.openResult(result,action,nil);return;
  }
  if([result[@"type"] isEqual:@"emoji"])[_usage recordQuery:self.query result:result];
+ // Return types an emoji into the app that was in front, without the clipboard; Command-Return and Copy in the action menu only copy it.
+ if([result[@"type"] isEqual:@"emoji"] && [action isEqual:@"open"]){[self dismiss:YES];if(self.openResult)self.openResult(result,@"type",nil);return;}
  if(result[@"copy"]){Copy(result[@"copy"]);[self dismiss:YES];return;}
  // A web address or search exists only for the text typed, so it teaches the ranking nothing.
  if(![@[@"url",@"web"] containsObject:result[@"type"]])[_usage recordQuery:self.query result:result];[self dismiss:[result[@"type"] isEqual:@"command"]];if(self.openResult)self.openResult(result,action,application);

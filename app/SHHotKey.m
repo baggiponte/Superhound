@@ -17,6 +17,7 @@ static OSStatus Invoked(EventHandlerCallRef next,EventRef event,void *context){
 - (NSString *)label {return [NSUserDefaults.standardUserDefaults stringForKey:[self key:@"Label"]]?:_defaultLabel;}
 - (BOOL)registerSaved {
  NSAssert(NSThread.isMainThread,@"hotkeys require main thread");if(_key){UnregisterEventHotKey(_key);_key=NULL;}
+ if(_off){_status=nil;_error=noErr;return YES;}
  UInt32 code=(UInt32)[NSUserDefaults.standardUserDefaults integerForKey:[self key:@"Code"]],mods=(UInt32)[NSUserDefaults.standardUserDefaults integerForKey:[self key:@"Modifiers"]];
  OSStatus result=_error=RegisterEventHotKey(code,mods,(EventHotKeyID){'SHND',_identifier},GetApplicationEventTarget(),kEventHotKeyExclusive,&_key);if(result!=noErr)_key=NULL;
  _status=result==noErr?[NSString stringWithFormat:NSLocalizedString(@"%@ registered. Try it from another app and confirm only Superhound opens.",@"Settings status; the argument is a shortcut such as ⌘Space"),self.label]:result==eventHotKeyExistsErr?[NSString stringWithFormat:NSLocalizedString(@"%@ is in use by another app. Use %@ in the menu bar, or choose other keys.",@"Settings status; the first argument is a shortcut such as ⌘Space, the second a menu item name such as Search"),self.label,_menu]:[NSString stringWithFormat:NSLocalizedString(@"%@ is unavailable (error %d). Use %@ in the menu bar, change the competing shortcut, then Retry.",@"Settings status; the first argument is a shortcut, the second an error number, the third a menu item name such as Search; Retry is a button title"),self.label,(int)result,_menu];

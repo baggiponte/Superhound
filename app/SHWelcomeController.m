@@ -1,11 +1,12 @@
 #import "SHWelcomeController.h"
 #import "SHSettingsController.h"
 #import "SHSpotlight.h"
+#import "SHClipboard.h"
 @interface SHWelcomeController () <NSTableViewDataSource,NSTableViewDelegate,NSWindowDelegate>
 @end
 @implementation SHWelcomeController {
  SHLibrary *_library;SHHotKey *_hotKey,*_historyKey;NSArray<NSDictionary *> *_folders;NSArray<NSArray *> *_rows;
- NSTableView *_table;SHShortcutButton *_recorder,*_historyRecorder;NSTextField *_shortcuts,*_spotlightNote,*_empty,*_try,*_progress,*_done;NSButton *_spotlight;NSImageView *_check;BOOL _shown,_tried;
+ NSTableView *_table;SHShortcutButton *_recorder,*_historyRecorder;NSTextField *_historyLabel,*_shortcuts,*_spotlightNote,*_empty,*_try,*_progress,*_done;NSButton *_spotlight;NSImageView *_check;BOOL _shown,_tried;
 }
 // Step text is 20 points right of the step titles; buttons sit 4 points left of the text, as in Settings.
 static const CGFloat Width=640,Text=Width-44-24;
@@ -21,7 +22,7 @@ static CGFloat RowHeight(NSArray *row){CGFloat height=0;for(NSUInteger i=1;i<row
  _spotlight=[NSButton checkboxWithTitle:NSLocalizedString(@"Use ⌘Space in place of Spotlight",@"Settings check box") target:self action:@selector(spotlight:)];_spotlight.frame=NSMakeRect(44,0,Text,24);_spotlight.accessibilityIdentifier=@"superhound.welcome.spotlight";[view addSubview:_spotlight];
  _spotlightNote=SHLabel(view,NSLocalizedString(@"Turns off Spotlight’s ⌘Space shortcut and opens Superhound with ⌘Space. To give ⌘Space back to Spotlight, turn this off, or choose Uninstall Superhound… in the menu bar.",@"Uninstall Superhound… is a menu item title"),NSMakeRect(64,0,Text-20,30),11,YES);
  // The recorders sit at x 200, 4 points left of a 160-point label column after the step text, as in Settings.
- NSTextField *searchLabel=SHLabel(view,NSLocalizedString(@"Open search",@"Settings row label for the search shortcut; 160 points wide"),NSMakeRect(44,0,152,20),13,NO),*historyLabel=SHLabel(view,NSLocalizedString(@"Clipboard",@"Section label: the clipboard history; Settings row label (160 points wide) and search panel band; keep it short"),NSMakeRect(44,0,152,20),13,NO);
+ NSTextField *searchLabel=SHLabel(view,NSLocalizedString(@"Open search",@"Settings row label for the search shortcut; 160 points wide"),NSMakeRect(44,0,152,20),13,NO),*historyLabel=_historyLabel=SHLabel(view,NSLocalizedString(@"Clipboard",@"Section label: the clipboard history; Settings row label (160 points wide) and search panel band; keep it short"),NSMakeRect(44,0,152,20),13,NO);
  _recorder=[[SHShortcutButton alloc] initWithFrame:NSMakeRect(200,0,170,32) hotKey:hotKey];_recorder.accessibilityLabel=NSLocalizedString(@"Record global search shortcut",@"VoiceOver label of the shortcut button");[view addSubview:_recorder];
  _historyRecorder=[[SHShortcutButton alloc] initWithFrame:NSMakeRect(200,0,170,32) hotKey:historyKey];_historyRecorder.accessibilityLabel=NSLocalizedString(@"Record clipboard history shortcut",@"VoiceOver label of the shortcut button");[view addSubview:_historyRecorder];
  __weak typeof(self) weak=self;_recorder.changed=_historyRecorder.changed=^{[weak refresh];};
@@ -52,7 +53,9 @@ static CGFloat RowHeight(NSArray *row){CGFloat height=0;for(NSUInteger i=1;i<row
 - (void)windowDidBecomeKey:(NSNotification *)notification {(void)notification;[self refresh];}
 - (void)refresh {
  [_recorder showKeys];[_historyRecorder showKeys];_spotlight.state=SHSpotlightEnabled(SHHotKey.spotlightHotKeys)?NSControlStateValueOff:NSControlStateValueOn;
- _shortcuts.stringValue=!_hotKey.registered?(_hotKey.status?:@""):!_historyKey.registered?(_historyKey.status?:@""):[NSString stringWithFormat:NSLocalizedString(@"Press %@ to search. Press %@ for the clipboard history.",@"Welcome window text; the arguments are shortcuts such as ⌘Space and ⌥⌘V"),_hotKey.label,_historyKey.label];
+ // With the clipboard history off, its row takes no space.
+ BOOL clip=SHClipboardHistoryOn(NSUserDefaults.standardUserDefaults);_historyLabel.hidden=_historyRecorder.hidden=!clip;
+ _shortcuts.stringValue=!_hotKey.registered?(_hotKey.status?:@""):!clip?[NSString stringWithFormat:NSLocalizedString(@"Press %@ to search.",@"Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space"),_hotKey.label]:!_historyKey.registered?(_historyKey.status?:@""):[NSString stringWithFormat:NSLocalizedString(@"Press %@ to search. Press %@ for the clipboard history.",@"Welcome window text; the arguments are shortcuts such as ⌘Space and ⌥⌘V"),_hotKey.label,_historyKey.label];
  _try.stringValue=[NSString stringWithFormat:NSLocalizedString(@"Press %@ and type part of an app name. Typos work, such as safri.",@"Welcome window text; the argument is a shortcut such as ⌘Space; safri is a typing error for Safari, keep it as it is"),_hotKey.label];
  _empty.hidden=_folders.count>0;_done.hidden=_check.hidden=!_tried;[self layout];
 }

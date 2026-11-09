@@ -103,12 +103,6 @@
 /* Note at the right of the search panel when a search location is unavailable; keep it short */
 "Check Settings for coverage" = "Abdeckung in Einstellungen prüfen";
 
-/* Menu bar menu item with a check mark */
-"Check for Updates Automatically" = "Automatisch nach Updates suchen";
-
-/* Menu bar menu item; keep it short */
-"Check for Updates…" = "Nach Updates suchen …";
-
 /* Menu bar menu item; keep it short */
 "Clear Clipboard History" = "Zwischenablage-Verlauf löschen";
 
@@ -213,7 +207,7 @@
 "Emoji" = "Emoji";
 
 /* Row detail; Return is the key name */
-"Emoji · Return to copy" = "Emoji · ↩ zum Kopieren";
+"Emoji · Return to paste" = "Emoji · ↩ zum Einsetzen";
 
 /* Alert button
    System command name in search results */
@@ -255,6 +249,9 @@
 /* Alert button */
 "Install and Relaunch" = "Installieren und neu starten";
 
+/* Settings check box; 220 points wide */
+"Keep a clipboard history" = "Zwischenablage-Verlauf führen";
+
 /* Settings button that opens System Settings → Keyboard; 199 points wide */
 "Keyboard Settings…" = "Tastatureinstellungen …";
 
@@ -269,6 +266,9 @@
 
 /* Placeholder of the license key field */
 "License key" = "Lizenzschlüssel";
+
+/* Welcome window text when the clipboard history is off; the argument is a shortcut such as ⌘Space */
+"Press %@ to search." = "Drücke %@ für die Suche.";
 
 /* About window credits */
 "Supporter License for this Mac." = "Unterstützerlizenz für diesen Mac.";
@@ -547,6 +547,9 @@
 /* Label above the result list */
 "The clipboard history is empty" = "Der Zwischenablage-Verlauf ist leer";
 
+/* Settings status; the argument is a shortcut such as ⌥⌘V */
+"The clipboard history is off. Superhound does not read what you copy, and %@ is free for other apps." = "Der Zwischenablage-Verlauf ist aus. Superhound liest nicht, was du kopierst, und %@ ist für andere Apps frei.";
+
 /* Error in the search panel */
 "The command did not finish." = "Der Befehl wurde nicht abgeschlossen.";
 
@@ -567,6 +570,12 @@
 
 /* No comment */
 "The download is not the expected version of Superhound." = "Der Download ist nicht die erwartete Version von Superhound.";
+
+/* No comment */
+"The emoji is copied. Superhound could not return to the previous app, so nothing was inserted." = "Emoji kopiert. Superhound kam nicht zur vorherigen App zurück, daher wurde nichts eingesetzt.";
+
+/* System Settings → Privacy & Security → Accessibility is the place in System Settings */
+"The emoji is copied. To insert emoji with Return, allow Superhound in System Settings → Privacy & Security → Accessibility." = "Emoji kopiert. Zum Einsetzen mit ↩ erlaube Superhound in Datenschutz & Sicherheit → Bedienungshilfen.";
 
 /* No comment */
 "The items in the Trash are deleted permanently. You cannot undo this." = "Die Objekte im Papierkorb werden endgültig gelöscht. Du kannst dies nicht widerrufen.";

@@ -10,3 +10,5 @@
 - (NSArray<NSDictionary *> *)list;
 - (void)waitUntilLoaded;
 @end
+// text cut into pieces of at most units UTF-16 code units, each ending where a character ends, for key presses that carry text; a single character longer than units stays one piece.
+NSArray<NSString *> *SHTypingChunks(NSString *text,NSUInteger units);

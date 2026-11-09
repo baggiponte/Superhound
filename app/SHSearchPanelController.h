@@ -11,6 +11,8 @@ extern NSString *const SHOwnCopyType;
 @property(nonatomic,strong) SHUsage *usage;
 @property(nonatomic,strong) SHEmoji *emoji;
 @property(nonatomic,strong) SHClipboard *clipboard;
+// NO leaves clipboard items out of a search and closes an open clipboard history; set from the defaults key clipboardHistory.
+@property(nonatomic) BOOL clipboardHistory;
 // NO shows the Become a Supporter link and the reminder on every tenth opening; enterLicense runs when the user clicks the link.
 @property(nonatomic) BOOL licensed;
 @property(nonatomic,copy) void (^enterLicense)(void);
