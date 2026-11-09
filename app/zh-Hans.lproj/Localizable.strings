@@ -103,12 +103,6 @@
 /* Note at the right of the search panel when a search location is unavailable; keep it short */
 "Check Settings for coverage" = "请在“设置”中查看覆盖范围";
 
-/* Menu bar menu item with a check mark */
-"Check for Updates Automatically" = "自动检查更新";
-
-/* Menu bar menu item; keep it short */
-"Check for Updates…" = "检查更新…";
-
 /* Menu bar menu item; keep it short */
 "Clear Clipboard History" = "清除剪贴板历史记录";
 
