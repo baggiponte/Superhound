@@ -58,7 +58,7 @@ static NSString *Label(NSString *state){
 - (SHRoot *)root:(NSString *)identifier {for(SHRoot *r in _roots)if([r.identifier isEqual:identifier])return r;return nil;}
 - (void)publish:(BOOL)rebuild {
  // Each rebuild reads the entries from the catalog; the snapshot keeps them compact, and the library keeps no copy.
- if(rebuild){@autoreleasepool{NSMutableArray *entries=[SHCommands.entries mutableCopy];NSMutableSet *seen=NSMutableSet.set;
+ if(rebuild){@autoreleasepool{NSMutableArray *entries=[SHCommands.entries mutableCopy];NSArray *places=[SHCommands placesInHome:NSHomeDirectory() system:@"/"];[entries addObjectsFromArray:places];NSMutableSet *seen=[NSMutableSet setWithArray:[places valueForKey:@"path"]];
   for(SHRoot *r in _roots)if(r.included){NSArray *found=[_catalog entriesForRoot:r.identifier];r.count=found.count;for(NSDictionary *e in found){NSString *path=e[@"path"];if(![seen containsObject:path]){[entries addObject:e];[seen addObject:path];}}}
   SHSearchSnapshot *s=[[SHSearchSnapshot alloc] initWithEntries:entries generation:++_generation];
   if(s)_snapshot=s;else {_snapshot=nil;_message=NSLocalizedString(@"Not enough memory to prepare search. Remove a large search location and refresh.",nil);}

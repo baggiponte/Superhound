@@ -135,5 +135,21 @@ int main(void) { @autoreleasepool {
   for(size_t i=0;i<64;i++){a[i]=97+arc4random_uniform(3);b[i]=97+arc4random_uniform(3);}
   sh_match_typo((SHText){a,boundaries,n},(SHText){b,boundaries,m});
  }
- puts("PASS search: ranking, Unicode, paths, cancellation, exhaustive scan, latest query, 20000 random inputs");
+ // Places: ~/Downloads and /Applications rank like apps, above an indexed folder and files with the same words; missing places are left out.
+ {NSString *t=[NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString],*home=[t stringByAppendingPathComponent:@"home"],*system=[t stringByAppendingPathComponent:@"system"],*cloud=[home stringByAppendingPathComponent:@"Library/Mobile Documents/com~apple~CloudDocs"];NSFileManager *files=NSFileManager.defaultManager;
+  for(NSString *d in @[[home stringByAppendingPathComponent:@"Downloads"],[cloud stringByAppendingPathComponent:@"Downloads"],[system stringByAppendingPathComponent:@"Applications/Utilities"]])assert([files createDirectoryAtPath:d withIntermediateDirectories:YES attributes:nil error:nil]);
+  NSArray *places=[SHCommands placesInHome:home system:system];
+  assert(([[places valueForKey:@"id"] isEqual:@[@"place:home",@"place:downloads",@"place:applications",@"place:utilities",@"place:icloud"]]));
+  for(NSDictionary *p in places)assert([p[@"type"] isEqual:@"folder"] && SHLaunchable(p) && [files fileExistsAtPath:p[@"path"]]);
+  NSMutableArray *all=[places mutableCopy];NSString *cloudDownloads=[cloud stringByAppendingPathComponent:@"Downloads"];
+  [all addObjectsFromArray:@[@{@"id":@1,@"root":@"cloud",@"name":@"Downloads",@"path":cloudDownloads,@"relative":@"Downloads",@"type":@"folder"},@{@"id":@2,@"root":@"cloud",@"name":@"report.pdf",@"path":[cloudDownloads stringByAppendingPathComponent:@"report.pdf"],@"relative":@"Downloads/report.pdf",@"type":@"file"},
+   @{@"id":@3,@"root":@"docs",@"name":@"applications.pdf",@"path":@"/d/applications.pdf",@"relative":@"applications.pdf",@"type":@"file"},@{@"id":@4,@"root":@"docs",@"name":@"Job Applications 2026.pdf",@"path":@"/d/Job Applications 2026.pdf",@"relative":@"Job Applications 2026.pdf",@"type":@"file"},
+   @{@"id":@5,@"root":@"docs",@"name":@"Utilities bill.pdf",@"path":@"/d/Utilities bill.pdf",@"relative":@"Utilities bill.pdf",@"type":@"file"}]];
+  SHSearchSnapshot *s=[[SHSearchSnapshot alloc] initWithEntries:all generation:1];
+  NSArray *found=[s search:@"downloads" cancelled:nil];assert([found.firstObject[@"path"] isEqual:[home stringByAppendingPathComponent:@"Downloads"]] && [[found valueForKey:@"path"] containsObject:cloudDownloads] && [found.firstObject[@"place"] isEqual:@YES]);
+  assert([[s search:@"applications" cancelled:nil].firstObject[@"path"] isEqual:[system stringByAppendingPathComponent:@"Applications"]]);
+  assert([[s search:@"utilities" cancelled:nil].firstObject[@"path"] isEqual:[system stringByAppendingPathComponent:@"Applications/Utilities"]]);
+  assert([[s search:@"icloud" cancelled:nil].firstObject[@"path"] isEqual:cloud] && [[s search:@"home" cancelled:nil].firstObject[@"id"] isEqual:@"place:home"]);
+  [files removeItemAtPath:t error:nil];}
+ puts("PASS search: places, ranking, Unicode, paths, cancellation, exhaustive scan, latest query, 20000 random inputs");
 } return 0; }

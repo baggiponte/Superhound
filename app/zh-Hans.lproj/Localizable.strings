@@ -234,6 +234,9 @@
 /* No comment */
 "Hidden descendants, package contents, online-only placeholders, and Superhound’s own data are skipped. Symbolic links are listed without following them." = "会跳过隐藏的子项、包内容、仅在线存储的占位项以及Superhound自身的数据。符号链接会被列出，但不会跟随其目标。";
 
+/* Search result name of the user's home folder, as in the Finder sidebar */
+"Home" = "个人";
+
 /* State of a search location during its scan */
 "Indexing" = "正在索引";
 
@@ -645,6 +648,9 @@
 
 /* System command name in search results: mute or unmute the sound */
 "Toggle Mute" = "切换静音";
+
+/* Search result name of the Trash folder, as in Finder */
+"Trash" = "废纸篓";
 
 /* Alert button */
 "Try Again" = "重试";

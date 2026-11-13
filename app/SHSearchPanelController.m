@@ -405,7 +405,7 @@ static BOOL Located(NSDictionary *result){return ![@[@"command",@"emoji",@"answe
   if(apps.numberOfItems){NSMenuItem *openWith=[menu addItemWithTitle:NSLocalizedString(@"Open With",@"Action menu item with a submenu of apps") action:nil keyEquivalent:@""];openWith.submenu=apps;}
  }
  add(NSLocalizedString(@"Copy Path",@"Action menu item"),@"copyPath",@"c",NSEventModifierFlagCommand|NSEventModifierFlagShift);
- if(![type isEqual:@"settings"] && [NSFileManager.defaultManager isDeletableFileAtPath:url.path]){[menu addItem:NSMenuItem.separatorItem];add(NSLocalizedString(@"Move to Trash",@"Action menu item"),@"trash",@"",0);}
+ if(![type isEqual:@"settings"] && !result[@"place"] && [NSFileManager.defaultManager isDeletableFileAtPath:url.path]){[menu addItem:NSMenuItem.separatorItem];add(NSLocalizedString(@"Move to Trash",@"Action menu item"),@"trash",@"",0);}
 }
 - (void)menuNeedsUpdate:(NSMenu *)menu {[menu removeAllItems];NSInteger row=_table.clickedRow;if(!_pending && row>=0 && row<(NSInteger)_results.count)[self addActionsFor:_results[(NSUInteger)row] to:menu];}
 - (void)chooseAction:(NSMenuItem *)item {NSDictionary *choice=item.representedObject;[self perform:choice[@"action"] result:choice[@"result"] application:choice[@"application"]];}

@@ -234,6 +234,9 @@
 /* No comment */
 "Hidden descendants, package contents, online-only placeholders, and Superhound’s own data are skipped. Symbolic links are listed without following them." = "Les éléments masqués, le contenu des paquets, les fichiers disponibles uniquement en ligne et les données de Superhound sont ignorés. Les liens symboliques sont listés sans être suivis.";
 
+/* Search result name of the user's home folder, as in the Finder sidebar */
+"Home" = "Départ";
+
 /* State of a search location during its scan */
 "Indexing" = "Indexation";
 
@@ -645,6 +648,9 @@
 
 /* System command name in search results: mute or unmute the sound */
 "Toggle Mute" = "Couper/rétablir le son";
+
+/* Search result name of the Trash folder, as in Finder */
+"Trash" = "Corbeille";
 
 /* Alert button */
 "Try Again" = "Réessayer";

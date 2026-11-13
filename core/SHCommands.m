@@ -16,4 +16,18 @@
  });
  return entries;
 }
+// Finder shows these folders with names in the user's language; the English name stays in the alias. A root folder is never an entry of its own scan, so places find ~/Downloads or /Applications.
++ (NSArray<NSDictionary *> *)placesInHome:(NSString *)home system:(NSString *)system {
+ NSFileManager *files=NSFileManager.defaultManager;NSMutableArray *list=NSMutableArray.array;
+ for(NSArray *p in @[@[@"home",home,@"Home",@"~ house user"],@[@"desktop",[home stringByAppendingPathComponent:@"Desktop"],@"Desktop",@""],@[@"documents",[home stringByAppendingPathComponent:@"Documents"],@"Documents",@""],@[@"downloads",[home stringByAppendingPathComponent:@"Downloads"],@"Downloads",@""],
+  @[@"pictures",[home stringByAppendingPathComponent:@"Pictures"],@"Pictures",@"photos"],@[@"movies",[home stringByAppendingPathComponent:@"Movies"],@"Movies",@"videos"],@[@"music",[home stringByAppendingPathComponent:@"Music"],@"Music",@""],
+  @[@"home-applications",[home stringByAppendingPathComponent:@"Applications"],@"Applications",@"apps"],@[@"applications",[system stringByAppendingPathComponent:@"Applications"],@"Applications",@"apps"],@[@"utilities",[system stringByAppendingPathComponent:@"Applications/Utilities"],@"Utilities",@""],
+  @[@"icloud",[home stringByAppendingPathComponent:@"Library/Mobile Documents/com~apple~CloudDocs"],@"iCloud Drive",@"icloud cloud"],@[@"trash",[home stringByAppendingPathComponent:@".Trash"],@"Trash",@"bin"]]){
+  BOOL folder=NO;if(![files fileExistsAtPath:p[1] isDirectory:&folder] || !folder)continue;
+  NSString *name=[p[0] isEqual:@"home"]?NSLocalizedString(@"Home",@"Search result name of the user's home folder, as in the Finder sidebar"):[p[0] isEqual:@"icloud"]?@"iCloud Drive":[p[0] isEqual:@"trash"]?NSLocalizedString(@"Trash",@"Search result name of the Trash folder, as in Finder"):[files displayNameAtPath:p[1]];
+  NSString *alias=[[@[[name isEqual:p[2]]?@"":p[2],p[3],[p[0] isEqual:@"home"]?home.lastPathComponent:@""] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]] componentsJoinedByString:@" / "];
+  [list addObject:@{@"type":@"folder",@"place":@YES,@"id":[@"place:" stringByAppendingString:p[0]],@"path":p[1],@"relative":@"",@"name":name,@"alias":alias}];
+ }
+ return list;
+}
 @end
